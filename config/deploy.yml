@@ -1,0 +1,82 @@
+# Kamal 2 deploy for kyufy-web — joins the shared Hetzner box (ARM) alongside
+# nativeapptemplate / commitjobs / myturntagapi / zaikusan. kamal-proxy routes by
+# host, so all of them share ports 80/443.
+#
+# NOTE: this repo is PUBLIC (SPEC §0), so no host inventory is committed here — the
+# server address comes from KYUFY_DEPLOY_HOST at deploy time. The IP and the rest of
+# the host inventory live in docs/LOCAL.md (gitignored). Export it before deploying:
+#
+#   export KYUFY_DEPLOY_HOST=<the Hetzner IP>
+service: kyufy-web
+
+# Image on GitHub Container Registry, under the kyufy-jp org (registry.server below
+# composes ghcr.io/...).
+image: kyufy-jp/kyufy-web
+
+servers:
+  web:
+    - <%= ENV.fetch("KYUFY_DEPLOY_HOST") %>
+
+proxy:
+  ssl: false # Cloudflare terminates TLS and forwards to the origin
+  host: kyufy.com
+  app_port: 3000 # Rails server binds 3000 (Dockerfile / bin/docker-entrypoint)
+  healthcheck:
+    path: /up
+    interval: 3
+
+registry:
+  server: ghcr.io
+  username: dadachi
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Native arm64 build (the Hetzner box is ARM, and the build Mac is Apple Silicon —
+# no emulation).
+builder:
+  arch: arm64
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
+  clear:
+    WEB_CONCURRENCY: 2
+    # The demo runs on the engine's deterministic Null adapters: no LLM credentials
+    # on the server, no outbound calls, and the verdicts are reproducible on stage
+    # (SPEC §4). Switch to "anthropic" only after setting KYUFY_ANTHROPIC_API_KEY.
+    KYUFY_LLM: "null"
+    # Postgres runs as the "db" accessory on this same host. The app reaches it by
+    # container name over the private "kamal" Docker network — never the public IP —
+    # so the database is not exposed. Active Record reads DB_HOST
+    # (config/database.yml). Name is "<service>-<accessory>".
+    DB_HOST: kyufy-web-db
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole"
+
+# Bridge assets across a deploy so old and new digests both resolve.
+asset_path: /rails/public/assets
+
+# PostgreSQL accessory on the same host.
+accessories:
+  db:
+    # pgvector, NOT stock postgres: the mounted kyufy_core engine stores 要綱 chunk
+    # embeddings in a vector() column, so the "vector" extension must exist or the
+    # very first migration fails.
+    image: pgvector/pgvector:pg17
+    host: <%= ENV.fetch("KYUFY_DEPLOY_HOST") %>
+    # 5432/5433/5434 are taken by commitjobs / myturntagapi / zaikusan on this box.
+    port: "127.0.0.1:5435:5432" # localhost-only bind
+    env:
+      clear:
+        # Must match config/database.yml production: username + primary database.
+        POSTGRES_USER: kyufy_web
+        POSTGRES_DB: kyufy_web_production
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data

@@ -46,6 +46,13 @@ yarn-debug.log*
 .idea
 *~
 
+# Ignore locally-installed gems (bundler path config); vendor/javascript stays tracked.
+/vendor/bundle
+
 # Project-specific
 .gstack
 /docs/LOCAL.md
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+

@@ -1,0 +1,53 @@
+<div id="intake_form" class="rounded-lg border border-neutral-100 bg-white p-5 shadow-sm">
+  <%= form_with model: intake_form, url: assessment_path, id: nil,
+                data: { action: "turbo:submit-start->chat#lock turbo:submit-end->chat#unlock" } do |f| %>
+    <% if intake_form.errors.any? %>
+      <div class="mb-4 rounded-md bg-danger-50 px-4 py-3 text-sm text-danger-600">
+        <ul class="list-disc pl-4">
+          <% intake_form.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <%= f.label :age, class: "mb-1 block text-sm font-medium text-neutral-700" %>
+        <%= f.number_field :age, min: 0, placeholder: "例: 52",
+              class: "w-full rounded-md border border-neutral-200 px-3 py-2 text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100" %>
+      </div>
+      <div>
+        <%= f.label :residence, class: "mb-1 block text-sm font-medium text-neutral-700" %>
+        <%= f.text_field :residence, placeholder: "例: 新宿区",
+              class: "w-full rounded-md border border-neutral-200 px-3 py-2 text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100" %>
+      </div>
+      <div>
+        <%= f.label :household_size, class: "mb-1 block text-sm font-medium text-neutral-700" %>
+        <%= f.number_field :household_size, min: 1, placeholder: "例: 3",
+              class: "w-full rounded-md border border-neutral-200 px-3 py-2 text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100" %>
+      </div>
+      <div>
+        <%# 所得 (net/taxable), NOT 収入 (gross) — labeled 前年の所得 per SPEC §2.1. %>
+        <%= f.label :prior_year_income_jpy, class: "mb-1 block text-sm font-medium text-neutral-700" %>
+        <%= f.number_field :prior_year_income_jpy, min: 0, step: 1, placeholder: "例: 864000（円）",
+              class: "w-full rounded-md border border-neutral-200 px-3 py-2 text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100" %>
+      </div>
+      <div>
+        <%= f.label :employment, class: "mb-1 block text-sm font-medium text-neutral-700" %>
+        <%= f.select :employment, IntakeForm::EMPLOYMENTS.invert.to_a, { include_blank: "選択しない" },
+              class: "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100" %>
+      </div>
+      <div>
+        <%= f.label :target, class: "mb-1 block text-sm font-medium text-neutral-700" %>
+        <%= f.select :target, IntakeForm::TARGETS.invert.to_a, {},
+              class: "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100" %>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <%= f.submit "判定する", data: { chat_target: "submit" },
+            class: "w-full cursor-pointer rounded-md bg-primary-500 px-4 py-2.5 font-semibold text-white transition hover:bg-primary-400 active:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,9 @@
+<%# Assistant-side summary line above the cards. The 該当 count is the one place the
+    accent color appears (PALETTE usage rules: sparingly, never on large surfaces). %>
+<% eligible_count = program_results.count { |pr| pr.verdict == :eligible } %>
+<div class="rounded-lg bg-primary-50 px-4 py-3 text-sm leading-relaxed">
+  <%= program_results.size %>件の制度を判定しました。
+  <span class="font-bold text-accent-600">該当 <%= eligible_count %>件</span>・
+  要確認 <%= program_results.count { |pr| pr.verdict == :needs_review } %>件・
+  非該当 <%= program_results.count { |pr| pr.verdict == :ineligible } %>件です。
+</div>

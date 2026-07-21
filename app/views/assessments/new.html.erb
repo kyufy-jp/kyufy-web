@@ -1,0 +1,12 @@
+<div data-controller="chat">
+  <%# Assistant greeting — the 壁打ち opener. %>
+  <div class="mb-4 rounded-lg bg-primary-50 px-4 py-3 text-sm leading-relaxed">
+    こんにちは。いくつか質問に答えると、もらえる可能性のある給付金・手当・助成金などを判定します。
+    わからない項目は空欄のままで大丈夫です（その項目は「要確認」として判定されます）。
+  </div>
+
+  <%= render "intake_form", intake_form: @intake_form %>
+
+  <%# Turbo Streams append assessment rounds (bubbles + verdict cards) here. %>
+  <div id="chat" data-chat-target="stream" class="mt-6 space-y-4"></div>
+</div>

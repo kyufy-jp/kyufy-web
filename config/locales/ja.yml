@@ -1,0 +1,20 @@
+ja:
+  kyufy:
+    # Verdict labels for the engine's symbols (SPEC §4) — the single mapping used by
+    # badges, cards, and tests. The engine returns :eligible / :ineligible / :needs_review.
+    verdicts:
+      eligible: 該当
+      ineligible: 非該当
+      needs_review: 要確認
+  activemodel:
+    models:
+      intake_form: プロフィール
+    attributes:
+      intake_form:
+        age: 年齢
+        residence: お住まいの市区町村
+        household_size: 世帯人数
+        prior_year_income_jpy: 前年の所得
+        employment: 就業状況
+        target: 対象
+        resident_tax_exempt: 住民税非課税

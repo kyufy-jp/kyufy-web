@@ -1,0 +1,60 @@
+<%# One Program's verdict card (SPEC §2.3). DOM ids use the engine's prefixed program_id
+    only — raw PKs never reach the DOM. `program` may be nil if a lookup ever misses. %>
+<article id="<%= "#{round_id}_#{program_result.program_id}" %>"
+         class="rounded-lg border border-neutral-100 bg-white shadow-sm">
+  <div class="flex flex-wrap items-center gap-2 border-b border-neutral-100 px-5 py-4">
+    <%= verdict_badge(program_result.verdict) %>
+    <h2 class="text-base font-semibold text-neutral-900"><%= program_result.program_name %></h2>
+    <% if program %>
+      <span class="rounded-full border border-neutral-200 px-2 py-0.5 text-xs text-neutral-500"><%= program.category %></span>
+      <% if program.authority.present? %>
+        <span class="text-xs text-neutral-500">所管: <%= program.authority %></span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <ul class="space-y-4 px-5 py-4">
+    <% program_result.reasons.each do |reason| %>
+      <li class="text-sm">
+        <p class="text-neutral-700">
+          <span class="mr-1 font-medium text-neutral-900">【<%= reason_kind_label(reason[:kind]) %>】</span>
+          <span class="mr-1 font-medium"><%= verdict_label(reason[:verdict]) %>:</span>
+          <%= reason[:explanation] %>
+        </p>
+
+        <% if reason[:citation].present? %>
+          <blockquote class="mt-2 border-l-4 border-primary-300 bg-neutral-50 px-4 py-3 text-neutral-700">
+            <%= reason[:citation] %>
+            <% if reason[:source_url].present? %>
+              <cite class="mt-1 block not-italic">
+                <%= link_to "出典を確認する", reason[:source_url],
+                            class: "text-xs text-primary-600 hover:underline",
+                            target: "_blank", rel: "noopener" %>
+              </cite>
+            <% end %>
+          </blockquote>
+          <% if reason[:license].present? %>
+            <p class="mt-1 text-xs text-neutral-500">
+              出典: <%= program&.authority.presence || program_result.program_name %>（<%= reason[:license] %>）
+            </p>
+          <% end %>
+        <% elsif reason[:source_url].present? %>
+          <p class="mt-1 text-xs">
+            <%= link_to "公式ページを確認する", reason[:source_url],
+                        class: "text-primary-600 hover:underline", target: "_blank", rel: "noopener" %>
+          </p>
+        <% end %>
+
+        <% if reason[:follow_up].present? %>
+          <p class="mt-2 rounded-md bg-warning-50 px-3 py-2 text-xs text-warning-800">
+            確認ポイント: <%= reason[:follow_up] %>
+          </p>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+
+  <p class="border-t border-neutral-100 px-5 py-3 text-xs text-neutral-500">
+    <%= program_result.disclaimer %>
+  </p>
+</article>

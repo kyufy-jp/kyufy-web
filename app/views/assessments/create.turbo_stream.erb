@@ -1,0 +1,27 @@
+<%# One assessment round: user bubble → summary → verdict cards → 逆質問 (if any).
+    Appending (not replacing) keeps the 壁打ち history in the chat stream. %>
+<%= turbo_stream.replace "intake_form" do %>
+  <%= render "intake_form", intake_form: @intake_form %>
+<% end %>
+
+<%= turbo_stream.append "chat" do %>
+  <%= render "profile_bubble", intake_form: @intake_form %>
+
+  <% if @program_results.empty? %>
+    <div class="rounded-lg bg-primary-50 px-4 py-3 text-sm leading-relaxed">
+      該当しうる制度が見つかりませんでした。お住まいの市区町村の表記（例: 新宿区、さいたま市中央区）を
+      変えて、もう一度お試しください。
+    </div>
+  <% else %>
+    <%= render "summary_bubble", program_results: @program_results %>
+
+    <% @program_results.each do |program_result| %>
+      <%= render "verdict_card", program_result: program_result, round_id: @round_id,
+                                 program: @programs_by_prefix_id[program_result.program_id] %>
+    <% end %>
+
+    <% @follow_up_questions.each do |question, field| %>
+      <%= render "follow_up", question: question, field: field, intake_form: @intake_form %>
+    <% end %>
+  <% end %>
+<% end %>

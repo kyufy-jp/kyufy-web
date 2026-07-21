@@ -1,0 +1,6 @@
+<%# Engine error → apologetic retry (SPEC §2.4). The form stays usable. %>
+<%= turbo_stream.append "chat" do %>
+  <div class="rounded-lg bg-danger-50 px-4 py-3 text-sm text-danger-600">
+    申し訳ありません。判定中にエラーが発生しました。少し時間をおいて、もう一度お試しください。
+  </div>
+<% end %>

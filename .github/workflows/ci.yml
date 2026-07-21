@@ -147,6 +147,12 @@ jobs:
           RAILS_ENV: test
         run: bin/rails db:test:prepare zeitwerk:check test
 
+      - name: Seeds load cleanly (parity with bin/ci)
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/test
+          RAILS_ENV: test
+        run: bin/rails db:seed:replant
+
   system_test:
     runs-on: ubuntu-latest
     defaults:

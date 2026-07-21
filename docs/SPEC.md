@@ -45,7 +45,8 @@ That's the whole app. No nav to build beyond a header with the kyufy logo/wordma
 ## 3. Visual design — Palette 19 (Refactoring UI)
 Character: Enterprise — indigo trust + warm orange accent. Chosen because: indigo reads as public-money trustworthy without copying デジタル庁 blue or Zaim green; orange carries the positive "money you can receive" energy; supporting colors map 1:1 to the three verdicts.
 
-### Tailwind config — canonical source: `docs/PALETTE.md`
+### Tailwind version & config — canonical source: `docs/PALETTE.md`
+**Decided: Tailwind v4** (what tailwindcss-rails currently bundles; CSS-first). Do not pin v3. Design tokens live in `application.css` as an `@theme` block — copy it verbatim from PALETTE.md. The block **wipes Tailwind's default palette** (`--color-*: initial`, then re-declares white/black) so only the kyufy palette is usable: `bg-indigo-500` or `text-gray-600` will simply not exist, which structurally prevents off-palette drift — especially in generated code. If a build error points at an unknown color utility, that's the discipline working; use the palette equivalent from PALETTE.md's UI-role table.
 **Do not hand-type color values from this SPEC.** The single source of truth for all scales is `docs/PALETTE.md`, which contains the full 10-shade values (Hex + HSL) for every family — primary (Indigo) / accent (Orange Vivid) / neutral (Cool Grey) / success / danger / warning, plus a reserved-unused magenta — with a copy-paste `theme.extend.colors` block and a UI-role quick-reference table. Copy the config from there verbatim. (An earlier revision of this SPEC embedded an abridged config with partial supporting scales; that duplication caused drift and is intentionally removed — PALETTE.md wins.)
 
 ### Usage rules

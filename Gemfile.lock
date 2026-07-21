@@ -1,5 +1,7 @@
-PATH
-  remote: ../kyufy_core
+GIT
+  remote: https://github.com/kyufy-jp/kyufy_core.git
+  revision: 52f5ab89e645b589a088fc6a0c292c1e495a165c
+  tag: v0.1.0
   specs:
     kyufy_core (0.1.0)
       neighbor

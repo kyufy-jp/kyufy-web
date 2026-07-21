@@ -3,7 +3,7 @@ name: CI
 # The Gemfile resolves the engine via path: "../kyufy_core", so every job checks out
 # both repos side by side (kyufy-web/ and kyufy_core/) and runs from kyufy-web/.
 # kyufy_core is currently private → its checkout needs KYUFY_CORE_TOKEN, a fine-grained
-# PAT with Contents: Read on dadachi/kyufy_core. Drop the token when the repo goes public.
+# PAT with Contents: Read on kyufy-jp/kyufy_core. Drop the token when the repo goes public.
 #
 # No LLM credentials in CI, ever: the whole suite runs on the engine's Null adapters
 # (KYUFY_LLM=null — deterministic, zero network).
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout kyufy_core (engine, path gem)
         uses: actions/checkout@v4
         with:
-          repository: dadachi/kyufy_core
+          repository: kyufy-jp/kyufy_core
           token: ${{ secrets.KYUFY_CORE_TOKEN }}
           path: kyufy_core
 
@@ -61,7 +61,7 @@ jobs:
       - name: Checkout kyufy_core (engine, path gem)
         uses: actions/checkout@v4
         with:
-          repository: dadachi/kyufy_core
+          repository: kyufy-jp/kyufy_core
           token: ${{ secrets.KYUFY_CORE_TOKEN }}
           path: kyufy_core
 
@@ -88,7 +88,7 @@ jobs:
       - name: Checkout kyufy_core (engine, path gem)
         uses: actions/checkout@v4
         with:
-          repository: dadachi/kyufy_core
+          repository: kyufy-jp/kyufy_core
           token: ${{ secrets.KYUFY_CORE_TOKEN }}
           path: kyufy_core
 
@@ -131,7 +131,7 @@ jobs:
       - name: Checkout kyufy_core (engine, path gem)
         uses: actions/checkout@v4
         with:
-          repository: dadachi/kyufy_core
+          repository: kyufy-jp/kyufy_core
           token: ${{ secrets.KYUFY_CORE_TOKEN }}
           path: kyufy_core
 
@@ -182,7 +182,7 @@ jobs:
       - name: Checkout kyufy_core (engine, path gem)
         uses: actions/checkout@v4
         with:
-          repository: dadachi/kyufy_core
+          repository: kyufy-jp/kyufy_core
           token: ${{ secrets.KYUFY_CORE_TOKEN }}
           path: kyufy_core
 

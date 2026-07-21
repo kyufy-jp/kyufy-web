@@ -20,8 +20,10 @@ gem "tailwindcss-rails"
 # gem "redis", ">= 4.0.1"
 
 # The kyufy assessment engine (該当 / 非該当 / 要確認 with cited 要綱 evidence).
-# Development uses the local checkout; deploys switch this to a git reference.
-gem "kyufy_core", path: "../kyufy_core"
+# Pinned to a released tag so the demo can't shift under us: the public repo needs no
+# auth, and CI/deploy resolve it without a side-by-side checkout. To take an engine
+# change, tag a new release there and bump the tag here (bundle update kyufy_core).
+gem "kyufy_core", git: "https://github.com/kyufy-jp/kyufy_core.git", tag: "v0.1.0"
 
 # Japanese locale data for Rails-generated strings (validation errors, date/number
 # helpers) — without it, "Age can't be blank" leaks into the demo (SPEC §4).

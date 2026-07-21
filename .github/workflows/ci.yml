@@ -1,9 +1,7 @@
 name: CI
 
-# The Gemfile resolves the engine via path: "../kyufy_core", so every job checks out
-# both repos side by side (kyufy-web/ and kyufy_core/) and runs from kyufy-web/.
-# kyufy_core is currently private → its checkout needs KYUFY_CORE_TOKEN, a fine-grained
-# PAT with Contents: Read on kyufy-jp/kyufy_core. Drop the token when the repo goes public.
+# The Gemfile resolves kyufy_core from its public repo at a pinned tag, so CI needs no
+# engine checkout and no credentials.
 #
 # No LLM credentials in CI, ever: the whole suite runs on the engine's Null adapters
 # (KYUFY_LLM=null — deterministic, zero network).
@@ -19,26 +17,13 @@ env:
 jobs:
   scan_ruby:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kyufy-web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: kyufy-web
-
-      - name: Checkout kyufy_core (engine, path gem)
-        uses: actions/checkout@v4
-        with:
-          repository: kyufy-jp/kyufy_core
-          token: ${{ secrets.KYUFY_CORE_TOKEN }}
-          path: kyufy_core
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          working-directory: kyufy-web
           bundler-cache: true
 
       - name: Scan for common Rails security vulnerabilities
@@ -49,26 +34,13 @@ jobs:
 
   scan_js:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kyufy-web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: kyufy-web
-
-      - name: Checkout kyufy_core (engine, path gem)
-        uses: actions/checkout@v4
-        with:
-          repository: kyufy-jp/kyufy_core
-          token: ${{ secrets.KYUFY_CORE_TOKEN }}
-          path: kyufy_core
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          working-directory: kyufy-web
           bundler-cache: true
 
       - name: Scan for security vulnerabilities in JavaScript dependencies
@@ -76,26 +48,13 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kyufy-web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: kyufy-web
-
-      - name: Checkout kyufy_core (engine, path gem)
-        uses: actions/checkout@v4
-        with:
-          repository: kyufy-jp/kyufy_core
-          token: ${{ secrets.KYUFY_CORE_TOKEN }}
-          path: kyufy_core
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          working-directory: kyufy-web
           bundler-cache: true
 
       - name: Lint code for consistent style
@@ -103,9 +62,6 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kyufy-web
 
     services:
       postgres:
@@ -125,20 +81,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: kyufy-web
-
-      - name: Checkout kyufy_core (engine, path gem)
-        uses: actions/checkout@v4
-        with:
-          repository: kyufy-jp/kyufy_core
-          token: ${{ secrets.KYUFY_CORE_TOKEN }}
-          path: kyufy_core
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          working-directory: kyufy-web
           bundler-cache: true
 
       - name: Run tests
@@ -155,9 +101,6 @@ jobs:
 
   system_test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kyufy-web
 
     services:
       postgres:
@@ -176,20 +119,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: kyufy-web
-
-      - name: Checkout kyufy_core (engine, path gem)
-        uses: actions/checkout@v4
-        with:
-          repository: kyufy-jp/kyufy_core
-          token: ${{ secrets.KYUFY_CORE_TOKEN }}
-          path: kyufy_core
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          working-directory: kyufy-web
           bundler-cache: true
 
       - name: Run system tests
@@ -203,5 +136,5 @@ jobs:
         if: failure()
         with:
           name: screenshots
-          path: kyufy-web/tmp/screenshots
+          path: tmp/screenshots
           if-no-files-found: ignore

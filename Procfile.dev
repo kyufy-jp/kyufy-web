@@ -1,0 +1,4 @@
+web: bin/rails server
+# watch[always] keeps the Tailwind v4 watcher alive under foreman, where stdin is a
+# pipe (the plain watcher exits on stdin close, taking the whole Procfile down).
+css: bin/rails tailwindcss:watch[always]

@@ -1,0 +1,28 @@
+<%# 逆質問 bubble (SPEC §2.2): the engine reported an undeterminable requirement whose
+    answer a Profile field can carry. Answering re-posts the enriched profile inline. %>
+<div class="rounded-lg bg-primary-50 px-4 py-3 text-sm">
+  <p class="mb-3 leading-relaxed"><%= question %></p>
+  <%= form_with model: intake_form, url: assessment_path, id: nil,
+                data: { action: "turbo:submit-start->chat#lock turbo:submit-end->chat#unlock" } do |f| %>
+    <%# Re-post the full profile; only the follow-up field changes. %>
+    <%= f.hidden_field :age %>
+    <%= f.hidden_field :residence %>
+    <%= f.hidden_field :household_size %>
+    <%= f.hidden_field :prior_year_income_jpy %>
+    <%= f.hidden_field :employment %>
+    <%= f.hidden_field :target %>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <label class="inline-flex items-center gap-1.5">
+        <%= f.radio_button field, true, class: "accent-primary-500" %>
+        <span>はい</span>
+      </label>
+      <label class="inline-flex items-center gap-1.5">
+        <%= f.radio_button field, false, class: "accent-primary-500" %>
+        <span>いいえ</span>
+      </label>
+      <%= f.submit "回答して再判定",
+            class: "cursor-pointer rounded-md bg-primary-500 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-primary-400 active:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60" %>
+    </div>
+  <% end %>
+</div>

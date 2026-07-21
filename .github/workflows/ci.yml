@@ -1,0 +1,201 @@
+name: CI
+
+# The Gemfile resolves the engine via path: "../kyufy_core", so every job checks out
+# both repos side by side (kyufy-web/ and kyufy_core/) and runs from kyufy-web/.
+# kyufy_core is currently private → its checkout needs KYUFY_CORE_TOKEN, a fine-grained
+# PAT with Contents: Read on dadachi/kyufy_core. Drop the token when the repo goes public.
+#
+# No LLM credentials in CI, ever: the whole suite runs on the engine's Null adapters
+# (KYUFY_LLM=null — deterministic, zero network).
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+env:
+  KYUFY_LLM: "null"
+
+jobs:
+  scan_ruby:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kyufy-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: kyufy-web
+
+      - name: Checkout kyufy_core (engine, path gem)
+        uses: actions/checkout@v4
+        with:
+          repository: dadachi/kyufy_core
+          token: ${{ secrets.KYUFY_CORE_TOKEN }}
+          path: kyufy_core
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          working-directory: kyufy-web
+          bundler-cache: true
+
+      - name: Scan for common Rails security vulnerabilities
+        run: bin/brakeman --no-pager
+
+      - name: Scan for known security vulnerabilities in gems used
+        run: bin/bundler-audit
+
+  scan_js:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kyufy-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: kyufy-web
+
+      - name: Checkout kyufy_core (engine, path gem)
+        uses: actions/checkout@v4
+        with:
+          repository: dadachi/kyufy_core
+          token: ${{ secrets.KYUFY_CORE_TOKEN }}
+          path: kyufy_core
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          working-directory: kyufy-web
+          bundler-cache: true
+
+      - name: Scan for security vulnerabilities in JavaScript dependencies
+        run: bin/importmap audit
+
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kyufy-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: kyufy-web
+
+      - name: Checkout kyufy_core (engine, path gem)
+        uses: actions/checkout@v4
+        with:
+          repository: dadachi/kyufy_core
+          token: ${{ secrets.KYUFY_CORE_TOKEN }}
+          path: kyufy_core
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          working-directory: kyufy-web
+          bundler-cache: true
+
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kyufy-web
+
+    services:
+      postgres:
+        # The engine needs the pgvector extension; the stock postgres image lacks it.
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 1s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: kyufy-web
+
+      - name: Checkout kyufy_core (engine, path gem)
+        uses: actions/checkout@v4
+        with:
+          repository: dadachi/kyufy_core
+          token: ${{ secrets.KYUFY_CORE_TOKEN }}
+          path: kyufy_core
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          working-directory: kyufy-web
+          bundler-cache: true
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/test
+          RAILS_ENV: test
+        run: bin/rails db:test:prepare zeitwerk:check test
+
+  system_test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kyufy-web
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 1s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: kyufy-web
+
+      - name: Checkout kyufy_core (engine, path gem)
+        uses: actions/checkout@v4
+        with:
+          repository: dadachi/kyufy_core
+          token: ${{ secrets.KYUFY_CORE_TOKEN }}
+          path: kyufy_core
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          working-directory: kyufy-web
+          bundler-cache: true
+
+      - name: Run system tests
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/test
+          RAILS_ENV: test
+        run: bin/rails db:test:prepare test:system
+
+      - name: Keep screenshots from failed system tests
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots
+          path: kyufy-web/tmp/screenshots
+          if-no-files-found: ignore

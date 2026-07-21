@@ -59,12 +59,14 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # DNS rebinding / Host-header protection (SPEC §0: the demo is served at kyufy.com via
+  # Cloudflare → Hetzner). Extra hosts — e.g. a temporary deploy subdomain during the
+  # future kyufy-shell cutover — can be added at boot via APP_HOSTS (comma-separated),
+  # so hardening this never blocks a legitimate deploy.
+  config.hosts = [ "kyufy.com", /.*\.kyufy\.com/ ]
+  config.hosts += ENV.fetch("APP_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
+
+  # Skip DNS rebinding protection for the health check endpoint (load balancers and
+  # uptime probes hit /up by IP, not by hostname).
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

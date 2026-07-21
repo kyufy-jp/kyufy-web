@@ -3,9 +3,7 @@
 > Hand this document to Claude Code together with the engine spec (`docs/SPEC.md`, Rev 2.4 — this doc is synced to it: prior_year_income_jpy field, 新宿区 primary demo profile, license attribution on verdict cards, real-seed follow-up questions). Colors: `docs/PALETTE.md` is the canonical palette (§3 defers to it).
 > Scope: the **thin MVP host app** that mounts the `kyufy_core` engine and provides the demo UI for the hackathon (壁打ち chat → verdict cards). No auth, no billing.
 >
-> Repo status: **public** (MIT). Tailwind Plus HTML components are used as part of a real application UI, which its license explicitly permits even for open-source End Products. Two obligations follow:
-> 1. Add this note to the README: "UI components in this app are based on Tailwind Plus (licensed to the author). They are part of this application's UI; please do not extract and reuse them as standalone components/templates."
-> 2. LICENSE is MIT for the application code; the README note above marks the Tailwind Plus-derived UI as the exception. Never turn this repo into anything resembling a component library or theme (that WOULD violate the Tailwind Plus license).
+> Repo status: **public** (MIT), fully clean: **no Tailwind Plus** (decision: dropped everywhere, including kyufy-shell — plain Tailwind CSS utilities only, styled per docs/PALETTE.md). No paid-component license bookkeeping applies to this repo.
 > The only strictly-private repo is kyufy-shell (Jumpstart Pro is paid, non-redistributable).
 >
 > Domain-term convention: same as kyufy-core — keep 給付金 / 補助金 / 助成金 / 手当 / 控除 / 要綱 / 該当 / 非該当 / 要確認 in Japanese. UI copy is Japanese (target users are Japanese speakers).
@@ -15,7 +13,7 @@
 ## 0. Position in the architecture
 ```
 kyufy_core   (public gem, MIT)      … assessment engine. No UI.
-kyufy-web    (this repo, public)    … thin Rails app. Hotwire + Tailwind Plus UI. Mounts kyufy_core.  ← hackathon demo & submitted デモURL
+kyufy-web    (this repo, public)    … thin Rails app. Hotwire + plain Tailwind UI. Mounts kyufy_core.  ← hackathon demo & submitted デモURL
 kyufy-shell  (future, private)      … Jumpstart Pro commercial shell. Replaces kyufy-web at monetization phase.
 ```
 - kyufy-web exists so the hackathon MVP has a real screen without dragging in Jumpstart Pro (overkill: MVP needs no auth/billing) and without polluting the public gem with paid UI code.
@@ -25,7 +23,7 @@ kyufy-shell  (future, private)      … Jumpstart Pro commercial shell. Replaces
 ## 1. Stack
 - **Rails 8.1.3 / Ruby 4.0.6**, plain `rails new` (no Jumpstart Pro). Repo name `kyufy-web` (hyphen; apps use hyphens, only the gem uses underscore `kyufy_core`). Rails app module: `KyufyWeb`.
 - **Hotwire (Turbo + Stimulus)** for the chat flow. No React.
-- **Tailwind CSS + Tailwind Plus (HTML version)** components for the UI shell (forms, cards, badges, layout).
+- **Tailwind CSS (plain utilities — no Tailwind Plus, no component kits)** for the UI (forms, cards, badges, layout), styled per docs/PALETTE.md. The single screen is simple enough to hand-build.
 - PostgreSQL + pgvector (required by the mounted engine).
 - Gems: `kyufy_core` (path/git), tailwindcss-rails. Keep it minimal.
 - Conventions: mainstream Rails SaaS-template conventions. **This repo is PUBLIC — pasting any code from paid templates (Jumpstart Pro etc.) would be redistribution; write all code fresh, imitate shape only.** (Maintainer-local reference paths live in `docs/LOCAL.md`, gitignored.)

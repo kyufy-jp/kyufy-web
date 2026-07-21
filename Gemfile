@@ -23,7 +23,7 @@ gem "tailwindcss-rails"
 # Pinned to a released tag so the demo can't shift under us: the public repo needs no
 # auth, and CI/deploy resolve it without a side-by-side checkout. To take an engine
 # change, tag a new release there and bump the tag here (bundle update kyufy_core).
-gem "kyufy_core", git: "https://github.com/kyufy-jp/kyufy_core.git", tag: "v0.1.0"
+gem "kyufy_core", git: "https://github.com/kyufy-jp/kyufy_core.git", tag: "v0.1.1"
 
 # Japanese locale data for Rails-generated strings (validation errors, date/number
 # helpers) — without it, "Age can't be blank" leaks into the demo (SPEC §4).

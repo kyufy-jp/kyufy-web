@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/kyufy-jp/kyufy_core.git
-  revision: 52f5ab89e645b589a088fc6a0c292c1e495a165c
-  tag: v0.1.0
+  revision: 47aeee4ab7d5405782fe55cffff21351d39ef394
+  tag: v0.1.1
   specs:
-    kyufy_core (0.1.0)
+    kyufy_core (0.1.1)
       neighbor
       prefixed_ids
       rails (>= 8.1, < 9)
@@ -451,7 +451,7 @@ CHECKSUMS
   irb (1.18.0) sha256=de9454a0703a54704b9811a5ef31a60c86949fbf4013fcf244fabc7c775248e3
   json (2.21.1) sha256=13a43df75d95641443f5702dff350f237164a9d811ff0f2c2800d4d980220583
   kamal (2.12.0) sha256=c51d1ab085e515470f98d0c0f043637122b5ebf76e8b610cb1fbbed0b7f9b8fa
-  kyufy_core (0.1.0)
+  kyufy_core (0.1.1)
   language_server-protocol (3.17.0.6) sha256=5ef2c0c138f8267e1bc631d3328347d354f96724b0af22f2c79516120443b7f0
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203

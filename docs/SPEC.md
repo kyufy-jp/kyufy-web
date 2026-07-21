@@ -59,6 +59,13 @@ Character: Enterprise — indigo trust + warm orange accent. Chosen because: ind
 - Contrast: all chosen text/bg pairs above meet WCAG AA; keep it that way when adjusting.
 
 ## 4. Implementation notes
+### Localization (Japanese-monolingual — not i18n abstraction)
+"Out of scope: i18n beyond Japanese" means no locale switching — it does NOT mean skipping Japanese setup. Without this, Rails-generated strings (validation errors, number/date helpers) come out in English and leak into the demo:
+- `config.i18n.default_locale = :ja`, `config.i18n.available_locales = [:ja]`.
+- Add the **rails-i18n** gem — supplies Japanese ActiveRecord/ActiveModel error messages ("〜を入力してください") and date/number formats. Without it, an empty intake field shows "Age can't be blank" mid-demo.
+- **Verdict labels live in `config/locales/ja.yml`** (`kyufy.verdicts.eligible: 該当` / `ineligible: 非該当` / `needs_review: 要確認`) — the engine returns symbols (SPEC §7); the mapping is used by badges, cards, and tests, so centralize it.
+- All other screen copy (form labels, disclaimer, follow-up prompts) may be written directly in views — extracting every string to locale files is overkill for MVP.
+
 - Controller flow: `AssessmentsController#create` → calls `KyufyCore.assess(profile:)` → broadcasts verdict cards via Turbo Streams into the chat frame. Follow-ups re-post the enriched profile.
 - Session-only state; nothing persisted about the user (mirrors the engine's no-PII rule).
 - One Stimulus controller for the chat form UX (disable-on-submit, scroll-to-latest).

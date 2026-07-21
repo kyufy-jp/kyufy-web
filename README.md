@@ -1,7 +1,7 @@
 # kyufy-web
 
 The thin MVP host app for **kyufy** — a single 壁打ち (wall-bounce) chat screen that mounts the
-[`kyufy_core`](https://github.com/dadachi/kyufy_core) assessment engine and shows, for a person's
+[`kyufy_core`](https://github.com/kyufy-jp/kyufy_core) assessment engine and shows, for a person's
 situation, which Japanese public benefits (給付金・補助金・助成金・手当・控除) they may be entitled
 to — each with **該当 / 非該当 / 要確認** and cited evidence (a quoted 要綱 excerpt + the official
 source link).
@@ -36,7 +36,7 @@ no-PII rule.
 ## Getting started
 
 Requires Ruby 4.0.6, PostgreSQL with the `vector` extension, and a local checkout of
-[`kyufy_core`](https://github.com/dadachi/kyufy_core) beside this repo (the Gemfile resolves it
+[`kyufy_core`](https://github.com/kyufy-jp/kyufy_core) beside this repo (the Gemfile resolves it
 via `path: "../kyufy_core"` in development):
 
 ```

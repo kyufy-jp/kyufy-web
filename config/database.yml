@@ -78,8 +78,12 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# Matches the "db" accessory in config/deploy.yml: same user and database name, and
+# reached over the private Docker network by container name (DB_HOST), never the
+# public IP. POSTGRES_PASSWORD is injected by Kamal from .kamal/secrets.
 production:
   <<: *default
   database: kyufy_web_production
   username: kyufy_web
-  password: <%= ENV["KYUFY_WEB_DATABASE_PASSWORD"] %>
+  password: <%= ENV["POSTGRES_PASSWORD"] %>
+  host: <%= ENV.fetch("DB_HOST", "localhost") %>

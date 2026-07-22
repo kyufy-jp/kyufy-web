@@ -72,21 +72,10 @@ Character: Enterprise — indigo trust + warm orange accent. Chosen because: ind
 - LLM adapter configured in an initializer: OpenCode for demo, NullAdapter fallback via ENV so the demo never dies on stage (`KYUFY_LLM=null` → deterministic demo mode).
 
 ## 5. Demo choreography (what the 1-minute video shows)
-**Seed policy (non-negotiable): only real, official-source programs are ever served.** The app
-loads `KyufyCore.import_dir` and never `KyufyCore.import_yaml` — the latter is the engine's
-illustrative fixture set, whose 要綱 excerpts are invented and whose official_urls are dead. It
-was briefly served in production; `test/models/seed_integrity_test.rb` now fails the build if it
-returns. A demo beat is never worth a fabricated citation about public money.
-
 1. Land on kyufy.com → clean intake form.
-2. Enter the demo profile — **18歳 / 新宿区 / 3人世帯 / 前年の所得 864,000円 / 自営業** → submit.
-   (Chosen because it produces the full verdict spread *from real programs alone*: old enough to
-   fail 子育て応援＋ and the 雇用保険 requirement, young enough to qualify for 018サポート.)
-   Stretch beat: switch residence to 杉並区 to surface an extra 要確認 and the 住民税非課税 逆質問.
-3. One 逆質問 appears (住民税は非課税ですか?) → answer inline.
-4. Verdict cards stream in — **該当 018サポート** (green), **非該当** 子育て応援＋ / 一般教育訓練給付金
-   (red), **要確認** 東京ゼロエミポイント (yellow) — each with its verbatim 要綱 excerpt, a working
-   official link, and license attribution where the source carries one (出典: 厚生労働省（PDL1.0）).
+2. Enter profile (Tokyo 23-ward resident per SPEC Rev 2.2 — e.g. 新宿区 / 3人世帯 / child in household …) → submit. (Stretch demo beat: switch residence to さいたま市中央区 mid-demo to show cross-municipality generality.)
+3. One 逆質問 appears (e.g. 前年所得) → answer inline.
+4. Verdict cards stream in: one 該当 (green), one 要確認 (yellow), with quoted 要綱 + official links visible.
 5. Scroll to show the disclaimer + kyufy_core GitHub link in the footer.
 
 ## 6. Out of scope (MVP)

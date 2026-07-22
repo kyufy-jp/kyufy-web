@@ -26,6 +26,15 @@ Auth, billing, and the production UI live in a separate private app (`kyufy-shel
 Nothing about the user is persisted — assessment state is session-only, mirroring the engine's
 no-PII rule.
 
+## Data provenance
+
+Every program served here comes from the engine's **real, official-source seed**
+(`db/seeds/programs/*.yml`): each requirement quotes its 要綱 verbatim, records the retrieval
+date, and links a live official page. The engine also ships an *illustrative* fixture set for
+its own tests — this app never loads it, and `test/models/seed_integrity_test.rb` fails the
+build if it ever reappears. Assessments concern public money, so a card must never cite a source
+that cannot be checked.
+
 ## Stack
 
 - **Rails 8.1 / Ruby 4.0**, Hotwire (Turbo + Stimulus), no React.
@@ -49,7 +58,7 @@ run `bundle update kyufy_core`. To develop against an unreleased engine change, 
 Gemfile at a local checkout temporarily (`gem "kyufy_core", path: "../kyufy_core"`) — just
 don't commit that.
 
-Then enter a profile (e.g. `52 / 新宿区 / 3人世帯 / 前年の所得 864000 / 自営業`) and submit — the
+Then enter a profile (e.g. `18 / 新宿区 / 3人世帯 / 前年の所得 864000 / 自営業`) and submit — the
 seeded programs produce a 該当 / 非該当 / 要確認 spread with citations.
 
 ## LLM adapter (no credentials required)

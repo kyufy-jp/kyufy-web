@@ -49,6 +49,11 @@ yarn-debug.log*
 # Ignore locally-installed gems (bundler path config); vendor/javascript stays tracked.
 /vendor/bundle
 
+# Browser-automation scratch output. The Playwright MCP server writes page snapshots and
+# console logs here whenever the app is driven in a browser (QA, screenshots, debugging).
+# It reappears on every run and has been hand-deleted before commits more than once.
+/.playwright-mcp
+
 # Project-specific
 .gstack
 /docs/LOCAL.md

@@ -3,15 +3,18 @@ require "application_system_test_case"
 # The whole demo on the Null adapters — deterministic, zero network (SPEC §4/§9).
 class AssessmentFlowTest < ApplicationSystemTestCase
   setup do
-    # Programs come from the engine's packaged seeds (same pair as db/seeds.rb).
-    KyufyCore.import_yaml
+    # Real, official-source programs only — the same set db/seeds.rb loads. Deliberately NOT
+    # KyufyCore.import_yaml: that fixture set carries invented 要綱 excerpts and dead URLs, and
+    # a test seeded differently from production is how it reached the live site unnoticed.
     KyufyCore.import_dir
   end
 
   test "新宿区 demo profile renders the full verdict spread with citations" do
     visit root_path
 
-    fill_in "年齢", with: 52
+    # 18歳・自営業: old enough to fail 子育て応援＋ and the 雇用保険 requirement, young enough
+    # for 018サポート — so the full 該当 / 非該当 / 要確認 spread comes from real programs.
+    fill_in "年齢", with: 18
     fill_in "お住まいの市区町村", with: "新宿区"
     fill_in "世帯人数", with: 3
     fill_in "前年の所得", with: 864_000
@@ -25,9 +28,19 @@ class AssessmentFlowTest < ApplicationSystemTestCase
     assert_selector "article span", exact_text: "要確認"
 
     # Real-seed cards with quoted 要綱 citations and license attribution.
+    assert_selector "article h2", text: "018サポート"
     assert_selector "article h2", text: "一般教育訓練給付金"
     assert_selector "article blockquote", minimum: 1
     assert_text "出典: 厚生労働省（PDL1.0）"
+
+    # Every card links to a real official page. The fixture set that briefly shipped to
+    # production cited pages that 404, so pin the hosts we actually verified.
+    official_links = page.all("article a[href^='https://']").map { |a| a[:href] }.uniq
+    assert official_links.any?, "expected official_url links on the cards"
+    official_links.each do |href|
+      assert_match %r{\Ahttps://(www\.fukushi\.metro\.tokyo\.lg\.jp|www\.hellowork\.mhlw\.go\.jp|www\.city\.suginami\.tokyo\.jp|www\.tz-points\.jp)/},
+                   href, "unexpected citation host — is a fixture program seeded?"
+    end
     assert_text "これは参考判定です。最終確認は各制度の公式窓口で行ってください。"
 
     # No raw PKs anywhere in the DOM: cards are identified by prefixed ids only,

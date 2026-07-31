@@ -1,9 +1,11 @@
 # kyufy-web — MVP Host App Design Spec (for Claude Code)
 
 > Hand this document to Claude Code together with the engine spec (`kyufy_core/docs/SPEC.md`, Rev 2.4 — this doc is synced to it: prior_year_income_jpy field, 新宿区 demo residence, license attribution on verdict cards, real-seed follow-up questions). The engine is consumed at **v0.1.1**. Colors: `docs/PALETTE.md` is the canonical palette (§3 defers to it).
-> Scope: the **thin MVP host app** that mounts the `kyufy_core` engine and provides the demo UI for the hackathon (壁打ち chat → verdict cards). No auth, no billing.
+> Scope: the **thin MVP host app** that mounts the `kyufy_core` engine and provides its one UI (壁打ち chat → verdict cards). No auth, no billing.
 >
-> Status: **built and live in production at https://kyufy.com.** Sections below describe what exists, not what is planned.
+> Status: **built and working, but no longer deployed.** It served https://kyufy.com from 2026-07-22 until 2026-07-31, when it was retired from its host. kyufy.com now serves `kyufy-shell`, a different service (§0). Run this app locally — see the README. Sections below describe what exists, not what is planned.
+>
+> Origin: this repo was built as the intended entry for **都知事杯オープンデータ・ハッカソン2026**. **That plan was abandoned** — kyufy-shell is the entry instead. Hackathon framing has therefore been removed below: where a rule was previously justified by "the demo," the durable reason is given in its place. The rules themselves are unchanged.
 >
 > Repo status: **public** (MIT), fully clean: **no Tailwind Plus** (decision: dropped everywhere, including kyufy-shell — plain Tailwind CSS utilities only, styled per docs/PALETTE.md). No paid-component license bookkeeping applies to this repo.
 > The only strictly-private repo is kyufy-shell (Jumpstart Pro is paid, non-redistributable).
@@ -47,14 +49,15 @@ Remediated: `import_dir` only (5 programs, 12 requirements), production purged 1
 ## 0. Position in the architecture
 ```
 kyufy_core   (public gem, MIT)      … assessment engine. No UI.
-kyufy-web    (this repo, public)    … thin Rails app. Hotwire + plain Tailwind UI. Mounts kyufy_core.  ← hackathon demo & submitted デモURL
-kyufy-shell  (future, private)      … Jumpstart Pro commercial shell. Replaces kyufy-web at monetization phase.
+kyufy-web    (this repo, public)    … thin Rails app. Hotwire + plain Tailwind UI. Mounts kyufy_core.  ← you are here
+kyufy-shell  (private)              … separate subsidy search/evaluation service. Serves kyufy.com; the 都知事杯 entry. Does NOT mount kyufy_core.
 ```
-- kyufy-web exists so the hackathon MVP has a real screen without dragging in Jumpstart Pro (overkill: MVP needs no auth/billing) and without polluting the public gem with paid UI code.
-- **Deployed with Kamal 2** onto the maintainer's existing Hetzner instance, sharing it with several other Rails apps. Image on `ghcr.io`; `kamal-proxy` routes by host, so all of them share ports 80/443; PostgreSQL runs as a same-host accessory bound to localhost. Domain: **kyufy.com** (Cloudflare DNS → Hetzner, Proxied). Host inventory, IPs, ports, and the deploy runbook live in `docs/LOCAL.md` (gitignored) — **never commit them here; this repo is public.** `config/deploy.yml` therefore reads the server address from `KYUFY_DEPLOY_HOST` rather than hardcoding it.
-- **TLS**: Cloudflare is in **Flexible** mode, matching `proxy.ssl: false` — the origin speaks plain HTTP. Rails sets **both** `assume_ssl` and `force_ssl`; `force_ssl` alone against an HTTP origin is the classic Flexible-mode redirect loop. The Cloudflare→origin hop is unencrypted, which is acceptable for this no-PII demo but must become Full (strict) before kyufy-shell handles billing.
+- kyufy-web exists so the engine has a real screen without dragging in Jumpstart Pro (overkill: it needs no auth/billing) and without polluting the public gem with paid UI code.
+- **kyufy-shell is not a successor to this app.** It shares the problem domain and the name, not the codebase: it is built independently, does **not** incorporate `kyufy_core`, and has no payment processing implemented. It took over the kyufy.com domain and the 都知事杯 entry, nothing else — no code, engine, or data moves from kyufy-web into it. Consequently kyufy-web is not superseded in any functional sense; it remains the only app that mounts the engine.
+- **Was deployed with Kamal 2** onto the maintainer's existing Hetzner instance, sharing it with several other Rails apps. Image on `ghcr.io`; `kamal-proxy` routed by host, so all of them shared ports 80/443; PostgreSQL ran as a same-host accessory bound to localhost. Domain was **kyufy.com** (Cloudflare DNS → Hetzner, Proxied). **Retired 2026-07-31** — the app container and its Postgres accessory were removed and the kyufy.com route deregistered; `config/deploy.yml` still describes the full setup, so a re-provision is `kamal setup`, not `kamal deploy`. Host inventory, IPs, ports, and the deploy/teardown runbook live in `docs/LOCAL.md` (gitignored) — **never commit them here; this repo is public.** `config/deploy.yml` therefore reads the server address from `KYUFY_DEPLOY_HOST` rather than hardcoding it.
+- **TLS**: Cloudflare was in **Flexible** mode, matching `proxy.ssl: false` — the origin spoke plain HTTP. Rails sets **both** `assume_ssl` and `force_ssl`; `force_ssl` alone against an HTTP origin is the classic Flexible-mode redirect loop. The Cloudflare→origin hop was unencrypted, acceptable for this no-PII app. That was noted as something to fix "before kyufy-shell handles billing" — a trigger that never applied, since kyufy-shell is a separate service with no payment processing. The rule still holds generally: any origin handling payments or PII needs Full (strict) with an Origin CA cert.
 - **Cross-municipality generality is a design capability, not a demo beat.** `KyufyCore::Geo` normalizes free-text residence to JIS X 0401/0402 codes across all 47 prefectures and the 20 政令指定都市 (including さいたま市 and its 10 wards), with designated-city ward→parent resolution and a fail-safe carve-out when normalization fails. That is what makes the engine municipality-agnostic. It is stated in prose because the *served* seed currently covers Tokyo programs only — we do not perform a demo we cannot back with verified data (§5).
-- **Future migration note (public summary)**: the billing production app (kyufy-shell) will run on a separate instance; cutover is a Cloudflare A-record flip (Proxied → instant switch, instant rollback). kyufy-web stays alive until the shell is proven — no "point of no return" migration day.
+- **Domain handover (completed 2026-07-31)**: kyufy-shell runs on a separate instance, and the handover was a Cloudflare A-record flip (Proxied → instant switch, instant rollback). The flip happened *before* kyufy-web was torn down, so there was never a window where kyufy.com pointed at a host with no route for it. Note this was a **domain** handover, not a migration: nothing moved from this app into kyufy-shell.
 
 ## 1. Stack
 - **Rails 8.1.3 / Ruby 4.0.6**, plain `rails new` (no Jumpstart Pro). Repo name `kyufy-web` (hyphen; apps use hyphens, only the gem uses underscore `kyufy_core`). Rails app module: `KyufyWeb`.
@@ -66,7 +69,7 @@ kyufy-shell  (future, private)      … Jumpstart Pro commercial shell. Replaces
   ```ruby
   gem "kyufy_core", git: "https://github.com/kyufy-jp/kyufy_core.git", tag: "v0.1.1"
   ```
-  A tag rather than tracking `main` so the demo cannot shift underfoot mid-hackathon. To take an engine change: tag a release there → bump `tag:` here → `bundle update kyufy_core`. To work against an unreleased change, point at a local checkout temporarily (`path: "../kyufy_core"`) and don't commit it.
+  A tag rather than tracking `main` so the app's behaviour cannot shift underfoot when the engine changes. To take an engine change: tag a release there → bump `tag:` here → `bundle update kyufy_core`. To work against an unreleased change, point at a local checkout temporarily (`path: "../kyufy_core"`) and don't commit it.
 - Conventions: mainstream Rails SaaS-template conventions. **This repo is PUBLIC — pasting any code from paid templates (Jumpstart Pro etc.) would be redistribution; write all code fresh, imitate shape only.** (Maintainer-local reference paths live in `docs/LOCAL.md`, gitignored.)
 
 ## 2. UI scope — ONE screen (the 壁打ち screen)
@@ -112,15 +115,16 @@ Character: Enterprise — indigo trust + warm orange accent. Chosen because: ind
 - Session-only state; nothing persisted about the user (mirrors the engine's no-PII rule). The app has **no models of its own**: `IntakeForm` is an ActiveModel value object, and every persisted table belongs to the mounted engine.
 - One Stimulus controller for the chat form UX (disable-on-submit, scroll-to-latest).
 - **Seeds: `KyufyCore.import_dir` only — 5 real programs, 12 requirements.** See the data-provenance rule above; this is the one line in this file that must not be "improved" for demo purposes.
-- LLM adapter configured in an initializer, switched by ENV. **`KYUFY_LLM=null` is the default and what production runs**: the engine's deterministic Null adapters, zero credentials and zero network, so the demo cannot die on stage from a rate limit or outage. `anthropic` (`KYUFY_ANTHROPIC_API_KEY`) and `openai`/`opencode` (`KYUFY_OPENAI_*`) are opt-in. Verdicts always come from the engine's rules — the LLM only writes the grounded explanation prose, so switching adapters cannot change a 該当 into a 非該当.
+- LLM adapter configured in an initializer, switched by ENV. **`KYUFY_LLM=null` is the default, and is what production ran**: the engine's deterministic Null adapters, zero credentials and zero network, so a checkout runs identically anywhere and cannot break on a rate limit or provider outage. `anthropic` (`KYUFY_ANTHROPIC_API_KEY`) and `openai`/`opencode` (`KYUFY_OPENAI_*`) are opt-in. Verdicts always come from the engine's rules — the LLM only writes the grounded explanation prose, so switching adapters cannot change a 該当 into a 非該当.
 
-## 5. Demo choreography (what the 1-minute video shows)
+## 5. Walkthrough (originally the choreography for the 1-minute demo video)
 
-Every beat below is reproducible against the live site with the served seed. Nothing here is
-aspirational — if a beat stops matching reality, change the beat, not the data.
+Every beat below is reproducible against a local checkout with the served seed. Nothing here is
+aspirational — if a beat stops matching reality, change the beat, not the data. This outlived
+the video it was written for: it doubles as the manual acceptance pass for the one screen.
 
 ### Path A — the full verdict spread (primary)
-1. Land on kyufy.com → clean intake form.
+1. Land on the app (`bin/dev` → http://localhost:3000; kyufy.com is kyufy-shell now) → clean intake form.
 2. Enter **18歳 / 新宿区 / 3人世帯 / 前年の所得 864,000円 / 自営業** → submit.
    *Why this profile:* it produces all three verdicts **from real programs alone** — old enough to fail 子育て応援＋ and the 雇用保険 requirement, young enough to qualify for 018サポート. The earlier 52歳 profile yields no 該当 from verified data, and reaching for a 該当 anyway is exactly what let the fixture set in.
 3. **4 verdict cards stream in — 該当 1 / 非該当 2 / 要確認 1:**

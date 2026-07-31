@@ -79,6 +79,13 @@ A single chat-style page. Flow:
 2. **Follow-up questions (逆質問)** — *as implemented; this is a decided scope, not a shortfall.* When the engine reports an undeterminable requirement, it may attach a `follow_up` question to that reason. Exactly one of those is **answerable inline**: 住民税は非課税ですか?（お住まいの通知書で確認できます） — because it is the only canned question with a matching `Profile` field (`resident_tax_exempt`). Answering it re-posts the enriched profile and re-assesses. See `AssessmentsController::ANSWERABLE_FOLLOW_UPS`.
 
    Every other undeterminable requirement — child's birthdate (018サポート), 障害者手帳の有無 (東京ゼロエミポイント), purchase/installation conditions — renders as a **要確認 card carrying its 要綱 citation and the question as guidance**. That is the correct fail-safe: the card tells the user exactly what to verify and where, rather than guessing at a 該当. Expanding `Profile` with fields like `has_disability_certificate` or a child birthdate is **post-MVP**, to be done only if demo rehearsal shows those 要確認 cards feel weak.
+
+   **Render order within a round is part of the contract: user bubble → summary → 逆質問 → verdict cards.** The 逆質問 comes *before* the cards — which is the order the numbered list above always specified; the implementation was the thing out of step. It shipped rendering last, below roughly five full-height cards and styled identically to the passive greeting and summary bubbles, while the card's own 「確認ポイント:」 line (inert guidance text) sat exactly where the user was reading. The salient copy could not be answered and the answerable one was off-screen, so the 壁打ち loop — the point of the screen — read as a dead end. Found by dogfooding and fixed 2026-07-31 (PR #16).
+
+   Three things enforce that and must move together if the order is ever revisited:
+   - The 逆質問 is styled as an **action, not a chat bubble** — warning-family border and background, matching the 要確認 badge and the card's 「確認ポイント:」 line, so the question and the verdict it would resolve read as one thread rather than two unrelated elements.
+   - `chat_controller.js` scrolls to the **first** node of the appended round, not `lastElementChild`. With the 逆質問 above the cards, scrolling to the last child lands *past* the question and silently restores the original bug. This is load-bearing, not cosmetic.
+   - Tests scope the 逆質問 on `[data-follow-up]`, never a palette class. Its colors are expected to change; its role is not. The system test previously scoped `.bg-primary-50` and broke the moment it was restyled.
 3. **Verdict cards**: one card per Program, streamed via Turbo Streams:
    - Badge: 該当 / 非該当 / 要確認
    - Program name + category chip (給付金/補助金/助成金/手当/控除) + authority (所管)

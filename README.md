@@ -9,9 +9,17 @@ source link).
 > **これは参考判定です。最終確認は各制度の公式窓口で行ってください。**
 > This is a reference assessment only. Always confirm at each program's official window.
 
-This app exists so the hackathon demo has a real screen without dragging in the commercial shell
-(no auth or billing needed for the MVP), and without putting UI code in the public engine gem.
-Auth, billing, and the production UI live in a separate private app (`kyufy-shell`) — not here.
+## Status — reference implementation, not the hackathon entry
+
+This app was originally built as the intended entry for **都知事杯オープンデータ・ハッカソン2026**.
+That plan was dropped. The entry is now `kyufy-shell` (kyufy.com) — a separate, private service
+for searching and evaluating subsidies, developed and operated independently of this repo and
+**not** built on `kyufy_core`.
+
+So nothing here is a stepping stone to that: this repo stands on its own as the smallest
+complete example of mounting the `kyufy_core` engine — intake → assess → cited verdict cards,
+in one controller and one screen. It is the only app that mounts the engine, and it is not
+deployed anywhere, so run it locally (see [Getting started](#getting-started)).
 
 ## What it does — one screen
 
@@ -30,14 +38,16 @@ no-PII rule.
 
 Every program served here comes from the engine's **real, official-source seed**
 (`db/seeds/programs/*.yml`): each requirement quotes its 要綱 verbatim, records the retrieval
-date, and links a live official page. The engine also ships an *illustrative* fixture set for
-its own tests — this app never loads it, and `test/models/seed_integrity_test.rb` fails the
-build if it ever reappears. Assessments concern public money, so a card must never cite a source
-that cannot be checked.
+date, and links a live official page. That is currently **5 programs / 12 requirements** —
+one 国 (厚生労働省), three 東京都, one 杉並区 — enough to exercise national, prefecture, and
+municipality scoping in a single assessment. The engine also ships an *illustrative* fixture
+set for its own tests — this app never loads it, and `test/models/seed_integrity_test.rb`
+fails the build if it ever reappears. Assessments concern public money, so a card must never
+cite a source that cannot be checked.
 
 ## Stack
 
-- **Rails 8.1 / Ruby 4.0**, Hotwire (Turbo + Stimulus), no React.
+- **Rails 8.1.3 / Ruby 4.0.6**, Hotwire (Turbo + Stimulus) over importmap — no Node, no React.
 - **Tailwind CSS v4** (plain utilities; palette from [`docs/PALETTE.md`](docs/PALETTE.md)).
 - **PostgreSQL + [pgvector](https://github.com/pgvector/pgvector)** (required by the engine).
 - **Japanese-monolingual**: `default_locale :ja` + rails-i18n.
@@ -58,8 +68,16 @@ run `bundle update kyufy_core`. To develop against an unreleased engine change, 
 Gemfile at a local checkout temporarily (`gem "kyufy_core", path: "../kyufy_core"`) — just
 don't commit that.
 
-Then enter a profile (e.g. `18 / 新宿区 / 3人世帯 / 前年の所得 864000 / 自営業`) and submit — the
-seeded programs produce a 該当 / 非該当 / 要確認 spread with citations.
+Then enter a profile (e.g. `18歳 / 新宿区 / 3人世帯 / 前年の所得 864000 / 自営業`) and submit. Four
+of the five seeded programs apply — the 杉並区 one is filtered out by residence — producing the
+full **該当 1 / 非該当 2 / 要確認 1** spread across 9 cited requirements:
+
+| Program | Verdict |
+| ------------------------ | ---------- |
+| 018サポート               | 該当       |
+| 子育て応援＋（プラス）      | 非該当     |
+| 一般教育訓練給付金         | 非該当     |
+| 東京ゼロエミポイント       | 要確認     |
 
 ## LLM adapter (no credentials required)
 
@@ -69,7 +87,7 @@ network**:
 
 | `KYUFY_LLM`           | Adapter                              | Notes                                             |
 | --------------------- | ------------------------------------ | ------------------------------------------------- |
-| `null` *(default)*    | Null (deterministic)                 | No keys, no network — the demo can't die on stage |
+| `null` *(default)*    | Null (deterministic)                 | No keys, no network — reproducible anywhere       |
 | `anthropic`           | Claude                               | Reads `KYUFY_ANTHROPIC_API_KEY` (a dedicated key) |
 | `openai` / `opencode` | OpenAI-compatible / OpenCode / local | Reads `KYUFY_OPENAI_*`                             |
 
@@ -87,9 +105,13 @@ bin/rails test:system  # system tests (Null adapters — deterministic, zero net
 
 ```
 kyufy_core   (public gem, MIT)   … assessment engine. No UI.
-kyufy-web    (this repo, public) … thin Rails app. Mounts kyufy_core.  ← the demo
-kyufy-shell  (future, private)   … commercial shell. Replaces this app at monetization.
+kyufy-web    (this repo, public) … thin Rails app. Mounts kyufy_core.  ← you are here
+kyufy-shell  (private)           … separate subsidy search/evaluation service. Serves
+                                   kyufy.com; the 都知事杯 entry. Does NOT use kyufy_core.
 ```
+
+The two apps share a problem domain and a name, not a codebase: `kyufy-shell` does not embed
+`kyufy_core`, so this repo remains the only worked example of mounting the engine.
 
 Design specs live in [`docs/SPEC.md`](docs/SPEC.md) and [`docs/PALETTE.md`](docs/PALETTE.md).
 

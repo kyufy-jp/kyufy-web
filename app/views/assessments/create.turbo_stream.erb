@@ -1,5 +1,11 @@
-<%# One assessment round: user bubble → summary → verdict cards → 逆質問 (if any).
-    Appending (not replacing) keeps the 壁打ち history in the chat stream. %>
+<%# One assessment round: user bubble → summary → 逆質問 (if any) → verdict cards.
+    Appending (not replacing) keeps the 壁打ち history in the chat stream.
+
+    The 逆質問 comes BEFORE the cards on purpose. It used to render last, which put the
+    only actionable control below several full-height cards — while the card's own
+    「確認ポイント:」 line (inert text) sat right where the user was reading. The salient
+    copy could not be answered and the answerable one was off-screen, so the 壁打ち loop
+    read as a dead end. Asking first also matches the metaphor: answer, then see results. %>
 <%= turbo_stream.replace "intake_form" do %>
   <%= render "intake_form", intake_form: @intake_form %>
 <% end %>
@@ -15,13 +21,13 @@
   <% else %>
     <%= render "summary_bubble", program_results: @program_results %>
 
+    <% @follow_up_questions.each do |question, field| %>
+      <%= render "follow_up", question: question, field: field, intake_form: @intake_form %>
+    <% end %>
+
     <% @program_results.each do |program_result| %>
       <%= render "verdict_card", program_result: program_result, round_id: @round_id,
                                  program: @programs_by_prefix_id[program_result.program_id] %>
-    <% end %>
-
-    <% @follow_up_questions.each do |question, field| %>
-      <%= render "follow_up", question: question, field: field, intake_form: @intake_form %>
     <% end %>
   <% end %>
 <% end %>

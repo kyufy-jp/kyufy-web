@@ -8,7 +8,7 @@ export default class extends Controller {
   static targets = ["stream"]
 
   connect() {
-    this.observer = new MutationObserver(() => this.scrollToLatest())
+    this.observer = new MutationObserver((mutations) => this.scrollToRound(mutations))
     if (this.hasStreamTarget) {
       this.observer.observe(this.streamTarget, { childList: true })
     }
@@ -26,8 +26,17 @@ export default class extends Controller {
     this.#submitButtons(event.target).forEach((button) => (button.disabled = false))
   }
 
-  scrollToLatest() {
-    this.streamTarget.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" })
+  // Scroll to the TOP of the round just appended, not the bottom of the stream. A round is
+  // user bubble → summary → 逆質問 → verdict cards, so landing on its first node puts the
+  // question on screen immediately; landing on lastElementChild would scroll past it to the
+  // final card, which is the discoverability bug this ordering exists to fix.
+  scrollToRound(mutations) {
+    const firstAdded = mutations
+      .flatMap((mutation) => Array.from(mutation.addedNodes))
+      .find((node) => node.nodeType === Node.ELEMENT_NODE)
+
+    const target = firstAdded ?? this.streamTarget.lastElementChild
+    target?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   #submitButtons(form) {

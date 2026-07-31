@@ -73,7 +73,9 @@ class AssessmentFlowTest < ApplicationSystemTestCase
 
     assert_text "住民税は非課税ですか?（お住まいの通知書で確認できます）"
 
-    within(".bg-primary-50", text: "住民税は非課税ですか") do
+    # Scope on the data hook, not a palette class — the 逆質問 is styled as an action and
+    # its colors are expected to change; its role is not.
+    within("[data-follow-up]", text: "住民税は非課税ですか") do
       choose "はい"
       click_on "回答して再判定"
     end

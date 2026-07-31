@@ -8,7 +8,7 @@
 > Origin: this repo was built as the intended entry for **都知事杯オープンデータ・ハッカソン2026**. **That plan was abandoned** — kyufy-shell is the entry instead. Hackathon framing has therefore been removed below: where a rule was previously justified by "the demo," the durable reason is given in its place. The rules themselves are unchanged.
 >
 > Repo status: **public** (MIT), fully clean: **no Tailwind Plus** (decision: dropped everywhere, including kyufy-shell — plain Tailwind CSS utilities only, styled per docs/PALETTE.md). No paid-component license bookkeeping applies to this repo.
-> The only strictly-private repo is kyufy-shell (Jumpstart Pro is paid, non-redistributable).
+> The only strictly-private repo is kyufy-shell.
 >
 > Domain-term convention: same as kyufy-core — keep 給付金 / 補助金 / 助成金 / 手当 / 控除 / 要綱 / 該当 / 非該当 / 要確認 in Japanese. UI copy is Japanese (target users are Japanese speakers).
 

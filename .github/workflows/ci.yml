@@ -10,6 +10,15 @@ on:
   pull_request:
   push:
     branches: [ main ]
+  # Weekly run so the security scans fire on an idle repo. bundler-audit checks the
+  # gems in Gemfile.lock against ruby-advisory-db, which changes independently of this
+  # code — a new advisory can land against an unchanged lockfile at any time. With only
+  # push/PR triggers, nothing would surface it until someone happened to open a PR.
+  # That is not hypothetical: CVE-2026-66066 (Active Storage) landed 2026-07-30 and was
+  # found by accident the next day, on a repo with no deployment and no active work.
+  schedule:
+    - cron: "17 20 * * 1" # Mondays 20:17 UTC — off the hour, GitHub throttles :00
+  workflow_dispatch:      # so the scans can be run on demand without an empty commit
 
 env:
   KYUFY_LLM: "null"
